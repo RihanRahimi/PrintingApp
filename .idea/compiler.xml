@@ -7,10 +7,12 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="PDF-Converter" />
+        <module name="PrintingApp" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="PDF-Converter" target="1.6" />
+      <module name="PrintingApp" target="1.6" />
     </bytecodeTargetLevel>
   </component>
 </project>

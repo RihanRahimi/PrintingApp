@@ -1,4 +1,3 @@
-
 import javafx.application.Application;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -7,20 +6,25 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.*;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.shape.Path;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.commons.lang.StringUtils;
+import org.apache.poi.xwpf.converter.pdf.PdfConverter;
+import org.apache.poi.xwpf.converter.pdf.PdfOptions;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import javax.print.*;
 import javax.print.attribute.HashPrintRequestAttributeSet;
 import javax.print.attribute.PrintRequestAttributeSet;
 import javax.print.attribute.standard.Copies;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class RunApp extends Application {
 
@@ -92,8 +96,19 @@ public class RunApp extends Application {
                 int size =file.size();
                 String lable = "";
                 for(int i = 0;i<size;i++){
-                    filePaths.add(file.get(i).getPath());
-                    lable +=file.get(i).getPath() + "\n";
+                    if(file.get(i).getPath().contains(".pdf")){
+                        filePaths.add(file.get(i).getPath());
+                        lable +=file.get(i).getPath() + "\n";
+                        System.out.println("pdf");
+                    }
+                    else{
+                        String path =setNewPDFPaths(file.get(i).getPath());
+                        pdfConverterr(file.get(i).getPath(),path);
+                        filePaths.add(path);
+                        lable+= path + "\n";
+                        System.out.println("docx");
+
+                    }
                 }
                 l.setText(lable);
             }
@@ -110,7 +125,7 @@ public class RunApp extends Application {
             if (pss.length == 0)
                 throw new RuntimeException("No printer services available.");
 
-            PrintService ps = pss[0];
+            PrintService ps = pss[2];
             System.out.println("Printing to " + ps);
 
             int size = filePaths.size();
@@ -129,6 +144,33 @@ public class RunApp extends Application {
         } catch (PrintException pe) {
             pe.printStackTrace();
         }
+
+    }
+    public String setNewPDFPaths(String oldPath){
+
+            int nrOfSlash = StringUtils.countMatches(oldPath, "\\");
+            String fileName = oldPath.split("\\\\")[nrOfSlash];
+            String pathWithoutTheFile = fileName;
+            pathWithoutTheFile = oldPath.replace(pathWithoutTheFile,"");
+            String newPath = pathWithoutTheFile+ "testFolder " + new Random().nextInt(100);
+            new File(newPath).mkdir();
+            newPath += "\\";
+            System.out.println(pathWithoutTheFile);
+            System.out.println(newPath);
+            return newPath + fileName.split(".docx")[0] + ".pdf";
+
+
+    }
+    public static void pdfConverterr(String docxPath, String pdfPath){
+        try{
+
+            InputStream doc = new FileInputStream(new File(docxPath));
+            OutputStream out = new FileOutputStream(new File(pdfPath));
+
+            XWPFDocument d = new XWPFDocument(doc);
+            PdfConverter.getInstance().convert(d, out, PdfOptions.create());
+        }
+        catch (Exception e){ e.printStackTrace();}
 
     }
 }
